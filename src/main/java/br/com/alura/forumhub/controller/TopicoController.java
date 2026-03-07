@@ -1,5 +1,6 @@
 package br.com.alura.forumhub.controller;
 
+import br.com.alura.forumhub.dto.AtualizacaoTopicoDTO;
 import br.com.alura.forumhub.dto.TopicoDTO;
 import br.com.alura.forumhub.dto.TopicoResponseDTO;
 import br.com.alura.forumhub.entity.Topico;
@@ -79,4 +80,49 @@ public class TopicoController {
 
         return ResponseEntity.ok(lista);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TopicoResponseDTO> detalhar(@PathVariable Long id) {
+        return topicoRepository.findById(id)
+                .map(topico -> new TopicoResponseDTO(
+                        topico.getId(),
+                        topico.getTitulo(),
+                        topico.getMensagem(),
+                        topico.getCurso(),
+                        topico.getStatus().name(),
+                        topico.getDataCriacao(),
+                        topico.getAutor().getEmail()
+                ))
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TopicoResponseDTO> atualizar(@PathVariable Long id,
+                                                       @RequestBody @Valid AtualizacaoTopicoDTO dto) {
+        return topicoRepository.findById(id)
+                .map(topico -> {
+                    topico.setTitulo(dto.titulo());
+                    topico.setMensagem(dto.mensagem());
+                    topico.setCurso(dto.curso());
+                    topico.setStatus(StatusTopico.valueOf(dto.status().toUpperCase())); // converte String para enum
+
+                    topicoRepository.save(topico);
+
+                    TopicoResponseDTO response = new TopicoResponseDTO(
+                            topico.getId(),
+                            topico.getTitulo(),
+                            topico.getMensagem(),
+                            topico.getCurso(),
+                            topico.getStatus().name(),
+                            topico.getDataCriacao(),
+                            topico.getAutor().getEmail()
+                    );
+
+                    return ResponseEntity.ok(response);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+
 }
