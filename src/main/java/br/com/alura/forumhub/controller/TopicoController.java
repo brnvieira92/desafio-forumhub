@@ -124,5 +124,18 @@ public class TopicoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+        var topicoOpt = topicoRepository.findById(id);
+
+        if (topicoOpt.isPresent()) {
+            topicoRepository.delete(topicoOpt.get());
+            return ResponseEntity.noContent().build(); // 204
+        } else {
+            return ResponseEntity.notFound().build(); // 404
+        }
+    }
+
+
 
 }
